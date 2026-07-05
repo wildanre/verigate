@@ -47,6 +47,15 @@ describe('read HTTP API', () => {
     expect(j.uniqueCounterparties).toBe(1);
   });
 
+  it('serves a single order by id', async () => {
+    const j = await (await fetch(`${base}/api/orders/o1`)).json();
+    expect(j.order.orderId).toBe('o1');
+  });
+
+  it('404s an unknown order id', async () => {
+    expect((await fetch(`${base}/api/orders/nope`)).status).toBe(404);
+  });
+
   it('404s an unknown path', async () => {
     expect((await fetch(`${base}/nope`)).status).toBe(404);
   });

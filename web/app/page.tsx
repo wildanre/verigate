@@ -8,6 +8,23 @@ export default async function OrdersPage() {
 
   return (
     <section>
+      <div className="hero">
+        <h2>Hire an agent to check your agent</h2>
+        <p>
+          VeriGate verifies AI outputs — schema validation, hallucination detection, and fact-checking — paid per
+          verification in USDC, with every result hashed on-chain. Live on CROO CAP.
+        </p>
+        <div className="cta">
+          <a className="btn" href="/playground">Try it free →</a>
+          <a className="btn ghost" href="https://github.com/wildanre/verigate/blob/main/docs/MCP.md" target="_blank" rel="noreferrer">
+            Hire via MCP
+          </a>
+          <a className="btn ghost" href="https://github.com/wildanre/verigate" target="_blank" rel="noreferrer">
+            GitHub
+          </a>
+        </div>
+      </div>
+
       <div className="metrics">
         <Metric value={metrics.total} label="Total orders" />
         <Metric value={metrics.completed} label="Completed" />
@@ -32,7 +49,9 @@ export default async function OrdersPage() {
           <tbody>
             {orders.map((o) => (
               <tr key={o.orderId}>
-                <td className="mono">{short(o.orderId)}</td>
+                <td className="mono">
+                  <a href={`/order/${o.orderId}`}>{short(o.orderId)}</a>
+                </td>
                 <td className="mono">{short(o.serviceId)}</td>
                 <td className="mono">{short(o.requesterAgentId)}</td>
                 <td>
