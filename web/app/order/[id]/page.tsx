@@ -2,7 +2,7 @@ import { getOrder } from '../../../lib/orders';
 
 export const dynamic = 'force-dynamic';
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://verigate-dashboard.vercel.app';
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://verigate.staifdev.codes';
 
 const SERVICE_NAMES: Record<string, string> = {
   '217e16a8-4180-44af-bfa3-cf870c8fd6a8': 'Schema & Output Validation',

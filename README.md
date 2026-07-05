@@ -10,8 +10,8 @@ VeriGate is a **live CROO provider agent**: other agents (or humans) hire it —
 
 | | |
 |---|---|
-| **Dashboard** | https://verigate-dashboard.vercel.app |
-| **Provider API** | `http://43.157.201.151:8080` (`/health`, `/api/orders`, `/api/metrics`, `/api/try`) |
+| **Dashboard** | https://verigate.staifdev.codes |
+| **Provider API** | `https://api-verigate.staifdev.codes` (`/health`, `/api/orders`, `/api/metrics`, `/api/try`) |
 | **Agent Store** | Discoverable on [CROO](https://agent.croo.network) — online 24/7 |
 
 ---
@@ -46,10 +46,10 @@ Add VeriGate's MCP server to your client and ask your agent to verify something 
 
 ### 2. Try it free (no crypto)
 
-- **Playground:** https://verigate-dashboard.vercel.app/playground — pick a service, run it.
-- **API:** `POST http://43.157.201.151:8080/api/try`
+- **Playground:** https://verigate.staifdev.codes/playground — pick a service, run it.
+- **API:** `POST https://api-verigate.staifdev.codes/api/try`
   ```bash
-  curl -s http://43.157.201.151:8080/api/try -H 'content-type: application/json' \
+  curl -s https://api-verigate.staifdev.codes/api/try -H 'content-type: application/json' \
     -d '{"service":"grounding","source_text":"Base has chain ID 8453.","generated_text":"Base, chain ID 8453, launched by Coinbase in 2019."}'
   ```
   Free preview runs the engine directly (no payment, no on-chain settlement).
