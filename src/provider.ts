@@ -173,17 +173,23 @@ function handleOrderCompleted(e: Event, deps: ProviderDeps): void {
 const FINAL_STATUSES = new Set(['completed', 'settled', 'rejected', 'expired']);
 
 /**
- * Reconcile in-flight orders against CROO. The `order_completed` WS event can be
- * missed (reconnects, timing), leaving orders stuck at 'created'/'paid'/
- * 'delivering'. This polls CROO for each non-final order and syncs its status,
- * so the store (and dashboard) become eventually consistent.
+ * Reconcile in-flight orders against CROO. Self-healing on two fronts:
+ * - A paid-but-undelivered order (missed `order_paid`, a prior delivery failure,
+ *   or a restart) is re-processed — verify + deliver again.
+ * - Otherwise, sync the local status from CROO in case `order_completed` was
+ *   missed, so the store (and dashboard) become eventually consistent.
  */
-export async function reconcileOrders(deps: Pick<ProviderDeps, 'client' | 'store' | 'logger'>): Promise<void> {
+export async function reconcileOrders(deps: ProviderDeps): Promise<void> {
   const inflight = deps.store.listOrders(200).filter((o) => !o.status || !FINAL_STATUSES.has(o.status));
   for (const o of inflight) {
     try {
       const order = await deps.client.getOrder(o.orderId);
-      if (order.status && order.status !== o.status) {
+      if (order.status === 'paid' && !deps.store.isDelivered(o.orderId)) {
+        deps.logger?.info?.(`reprocessing paid-but-undelivered order ${o.orderId}`);
+        await withRetry(() => processPaidOrder(o.orderId, deps), deps.retry ?? DEFAULT_RETRY, deps.logger).catch((err) =>
+          deps.logger?.warn?.(`reprocess ${o.orderId} failed: ${(err as Error).message}`),
+        );
+      } else if (order.status && order.status !== o.status) {
         deps.store.markStatus(o.orderId, order.status);
         deps.logger?.info?.(`reconciled ${o.orderId}: ${o.status} -> ${order.status}`);
       }

@@ -56,9 +56,7 @@ async function main(): Promise<void> {
 
   // Reconcile in-flight orders against CROO in case order_completed events are missed.
   const reconcileTimer = setInterval(() => {
-    reconcileOrders({ client: deps.client, store, logger: console }).catch((e) =>
-      console.warn('reconcile pass failed:', (e as Error).message),
-    );
+    reconcileOrders(deps).catch((e) => console.warn('reconcile pass failed:', (e as Error).message));
   }, 30_000);
   reconcileTimer.unref?.();
 
