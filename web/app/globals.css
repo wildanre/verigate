@@ -140,9 +140,27 @@ main {
 .dotgrid {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(230, 233, 239, 0.06) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(230, 233, 239, 0.05) 1px, transparent 1px);
   background-size: 24px 24px;
   pointer-events: none;
+}
+
+.particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.9;
+  z-index: 0;
+}
+
+.particles canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.hero {
+  padding: 120px 0 92px;
 }
 
 .hero-inner {
