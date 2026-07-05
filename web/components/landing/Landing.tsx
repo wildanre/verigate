@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Reveal } from './Reveal';
 import { CountUp } from './CountUp';
 import { DotGrid } from './DotGrid';
+import { Particles } from './Particles';
 
 const GH = 'https://github.com/wildanre/verigate';
 const API_BASE = 'https://api-verigate.staifdev.codes';
@@ -68,6 +69,7 @@ export function Landing({ metrics }: { metrics: LandingMetrics }) {
       {/* Hero */}
       <section className="hero">
         <DotGrid />
+        <Particles />
         <div className="section-inner hero-inner">
           <span className="pill">● Live on Base mainnet · CROO CAP</span>
           <Headline />
