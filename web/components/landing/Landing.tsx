@@ -1,7 +1,7 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { useRef, type ReactNode } from 'react';
+import { gsap, useGSAP, MOTION_OK } from '../../lib/gsap';
 import { Reveal } from './Reveal';
 import { CountUp } from './CountUp';
 import { HoleBackground } from '@/components/animate-ui/components/backgrounds/hole';
@@ -63,10 +63,33 @@ CROO_TARGET_SERVICE_ID=<service-id> \\
 npm run requester`;
 
 export function Landing({ metrics }: { metrics: LandingMetrics }) {
+  const heroRef = useRef<HTMLElement>(null);
+
+  // Scrub: hero content gently rises and fades as you scroll past it.
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add(MOTION_OK, () => {
+        gsap.to('.hero-inner', {
+          opacity: 0,
+          y: -70,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: 'top top',
+            end: 'bottom 40%',
+            scrub: true,
+          },
+        });
+      });
+    },
+    { scope: heroRef },
+  );
+
   return (
     <div className="landing">
       {/* Hero */}
-      <section className="hero">
+      <section className="hero" ref={heroRef}>
         <div className="hero-fx">
           <HoleBackground strokeColor="#3a4351" className="size-full" />
         </div>
@@ -219,21 +242,31 @@ export function Landing({ metrics }: { metrics: LandingMetrics }) {
 }
 
 function Headline() {
-  const reduced = useReducedMotion();
+  const ref = useRef<HTMLHeadingElement>(null);
   const words = 'Hire an agent to check your agent'.split(' ');
-  if (reduced) return <h1 className="hero-title">Hire an agent to check your agent</h1>;
+
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add(MOTION_OK, () => {
+        gsap.from('.hw', {
+          opacity: 0,
+          y: 22,
+          duration: 0.7,
+          stagger: 0.07,
+          ease: 'power3.out',
+        });
+      });
+    },
+    { scope: ref },
+  );
+
   return (
-    <h1 className="hero-title">
+    <h1 className="hero-title" ref={ref}>
       {words.map((w, i) => (
-        <motion.span
-          key={`${w}-${i}`}
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{ display: 'inline-block', marginRight: '0.28em' }}
-        >
+        <span key={`${w}-${i}`} className="hw" style={{ display: 'inline-block', marginRight: '0.28em' }}>
           {w}
-        </motion.span>
+        </span>
       ))}
     </h1>
   );

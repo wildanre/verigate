@@ -1,32 +1,30 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useInView, useReducedMotion } from 'motion/react';
+import { useRef } from 'react';
+import { gsap, useGSAP, MOTION_OK } from '../../lib/gsap';
 
-/** Animate a number from 0 to `value` when it scrolls into view. */
-export function CountUp({ value, duration = 1.2 }: { value: number; duration?: number }) {
+/**
+ * Animate a number from 0 to `value` when scrolled into view (GSAP textContent
+ * snap pattern). SSR renders the final value so the metric is real without JS.
+ */
+export function CountUp({ value, duration = 1.4 }: { value: number; duration?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-40px' });
-  const reduced = useReducedMotion();
-  const [n, setN] = useState(0);
 
-  useEffect(() => {
-    if (!inView) return;
-    if (reduced) {
-      setN(value);
-      return;
-    }
-    let raf = 0;
-    const start = performance.now();
-    const tick = (t: number) => {
-      const p = Math.min(1, (t - start) / (duration * 1000));
-      const eased = 1 - Math.pow(1 - p, 3);
-      setN(Math.round(value * eased));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [inView, value, duration, reduced]);
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add(MOTION_OK, () => {
+        gsap.from(ref.current, {
+          textContent: 0,
+          snap: { textContent: 1 },
+          duration,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: ref.current, start: 'top 92%', once: true },
+        });
+      });
+    },
+    { scope: ref },
+  );
 
-  return <span ref={ref}>{n}</span>;
+  return <span ref={ref}>{value}</span>;
 }
