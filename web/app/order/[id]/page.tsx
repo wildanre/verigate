@@ -16,9 +16,9 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
   if (!order) {
     return (
-      <section>
+      <section className="container">
         <p className="empty">Order not found.</p>
-        <p><a href="/">← Back to orders</a></p>
+        <p><a href="/dashboard">← Back to dashboard</a></p>
       </section>
     );
   }
@@ -29,8 +29,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const embed = `[![Verified by VeriGate](${SITE}/badge/${verdict})](${SITE}/order/${order.orderId})`;
 
   return (
-    <section>
-      <p><a href="/">← All orders</a></p>
+    <section className="container">
+      <p><a href="/dashboard">← All orders</a></p>
       <h2>Verification {verdict !== '—' && <span className={`badge ${verdict}`}>{verdict}</span>}</h2>
 
       <table style={{ marginBottom: 24 }}>

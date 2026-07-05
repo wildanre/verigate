@@ -50,7 +50,7 @@ export default function PlaygroundPage() {
   }
 
   return (
-    <section>
+    <section className="container">
       <h2>Playground</h2>
       <p className="label">
         Try any of the three services live (free preview via the provider engine). To settle a real on-chain order,
