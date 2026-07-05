@@ -1,0 +1,15 @@
+node_modules
+dist
+web
+data
+docs
+.git
+.github
+.env
+.env.*
+!.env.example
+*.log
+coverage
+*.tsbuildinfo
+scripts
+Procfile

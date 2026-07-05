@@ -1,10 +1,10 @@
-import { getOrders, getMetrics, type DashOrder } from '../lib/db';
+import { getOrders, getMetrics } from '../lib/orders';
+import type { DashOrder } from '../lib/db';
 
 export const dynamic = 'force-dynamic';
 
-export default function OrdersPage() {
-  const orders = getOrders();
-  const metrics = getMetrics();
+export default async function OrdersPage() {
+  const [orders, metrics] = await Promise.all([getOrders(), getMetrics()]);
 
   return (
     <section>

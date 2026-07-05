@@ -2,6 +2,7 @@ import { loadConfig, redactConfig } from './config.js';
 import { createClient } from './cap/client.js';
 import { OrderStore } from './store/orders.js';
 import { startProvider, type ProviderDeps } from './provider.js';
+import { startHttpApi } from './api.js';
 import { validateSchema } from './engine/schema.js';
 import { makeGroundingCheck } from './engine/grounding.js';
 import { makeFactCheck } from './engine/factcheck.js';
@@ -39,18 +40,24 @@ async function main(): Promise<void> {
     console.warn('No LLM token (ANTHROPIC_AUTH_TOKEN/ANTHROPIC_API_KEY) — grounding & fact-check disabled');
   }
 
+  const store = new OrderStore(cfg.dbPath);
   const deps: ProviderDeps = {
     client: createClient(cfg),
-    store: new OrderStore(cfg.dbPath),
+    store,
     engine: { verifiers, serviceIds: cfg.serviceIds },
     logger: console,
   };
 
   const stream = await startProvider(deps);
 
+  // Read-only HTTP API for the dashboard (e.g. hosted on Vercel).
+  const port = Number(process.env.PORT ?? 8080);
+  const api = startHttpApi(store, port, console);
+
   const shutdown = () => {
     console.log('shutting down...');
     stream.close?.();
+    api.close();
     process.exit(0);
   };
   process.on('SIGINT', shutdown);

@@ -39,7 +39,7 @@ CROO backend + CAPVault  ──WS events──►  VeriGate Provider ──► V
                                             Dashboard (Next.js) reads (read-only)
 ```
 
-Provider and dashboard are **co-located** on one persistent host, sharing one SQLite file. One CROO API key = one WebSocket connection, so the provider owns the socket and the dashboard reads the store — it never opens its own.
+The **provider** runs on a persistent host (e.g. Tencent Cloud via Docker): it owns the CROO WebSocket, writes orders to SQLite, and exposes a read-only HTTP API (`/health`, `/api/orders`, `/api/metrics`). The **dashboard** deploys separately (e.g. Vercel) and reads that API via `PROVIDER_API_URL`. For local dev the dashboard falls back to reading the SQLite file directly. One CROO API key = one WebSocket, so only the provider holds the socket.
 
 ## Quick Start
 
@@ -58,7 +58,21 @@ Dashboard (separate process, same `DB_PATH`):
 cd web && npm install && npm run build && npm run start   # http://localhost:3000
 ```
 
-Or run both together in one container: `docker build -t verigate . && docker run --env-file .env -p 3000:3000 verigate`.
+## Deploy
+
+**Provider** (Docker — e.g. Tencent Cloud):
+
+```bash
+docker build -t verigate .
+docker run -d --name verigate --env-file .env \
+  -p 8080:8080 -v verigate-data:/app/data verigate
+```
+
+Set the CROO / LLM / Tavily env vars on the host (never bake `.env` into the image). Mount a volume at `/app/data` so the order store survives restarts. The container exposes the read API on `:8080` with a `/health` check. Keep it running for the whole judging window so VeriGate stays `online` in the Agent Store.
+
+**Dashboard** (Vercel): import the repo, set **Root Directory = `web`**, and add env var `PROVIDER_API_URL=https://<your-provider-host>:8080`. The dashboard reads the provider's API — no database on Vercel.
+
+**Being hired by others:** once the provider is online, any CROO agent can discover and order VeriGate's services (via the Agent Store or the CROO MCP server) — the provider accepts every counterparty for its registered services and settles in USDC.
 
 ## Try it (hire VeriGate as an agent)
 
@@ -99,7 +113,7 @@ It negotiates, pays (sequentially), waits for delivery, and prints the report.
 ## Testing
 
 ```bash
-npm test        # 55 unit + integration tests (engine, store, provider lifecycle, requester, dashboard)
+npm test        # 61 unit + integration tests (engine, store, provider lifecycle, HTTP API, requester, dashboard)
 npm run lint    # typecheck (src + demo)
 ```
 
@@ -107,7 +121,13 @@ The provider lifecycle tests drive a fake event stream through negotiate → pay
 
 ## Demo
 
-_Demo video and a completed-order Basescan transaction link go here._
+First real order settled on Base mainnet (order `c47cfc37`, schema validation, verdict `pass`):
+
+- Payment: [`0xccd94040…`](https://basescan.org/tx/0xccd94040e85ee8a09fc7575c7e0706050ffc3df111723f72aedd7824b4564089)
+- Delivery (report hash on-chain): [`0xe89243f6…`](https://basescan.org/tx/0xe89243f6a3faf04d0f5a852979417e4abd3dbd28bd259ffd76ad3abd4bbc95df)
+- Delivered report hash: `0x4790154f1c0d20f80987eb1b4523d99f2be54f93fb5e7297ffbaa153e762c1f2`
+
+_Demo video link goes here._
 
 ## License
 

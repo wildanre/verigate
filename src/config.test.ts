@@ -41,6 +41,23 @@ describe('loadConfig', () => {
   it('treats blank strings as missing', () => {
     expect(() => loadConfig({ ...fullEnv, CROO_SDK_KEY: '   ' })).toThrow(MissingEnvError);
   });
+
+  it('strips surrounding quotes (Docker --env-file leaves them literal)', () => {
+    const cfg = loadConfig({
+      CROO_API_URL: '"https://api.croo.network"',
+      CROO_WS_URL: "'wss://api.croo.network/ws'",
+      CROO_SDK_KEY: '"croo_sk_abc"',
+      SVC_SCHEMA_ID: '"217e16a8"',
+    } as NodeJS.ProcessEnv);
+    expect(cfg.croo.apiURL).toBe('https://api.croo.network');
+    expect(cfg.croo.wsURL).toBe('wss://api.croo.network/ws');
+    expect(cfg.croo.sdkKey).toBe('croo_sk_abc');
+    expect(cfg.serviceIds.schema).toBe('217e16a8');
+  });
+
+  it('treats a quoted-empty value as missing', () => {
+    expect(() => loadConfig({ ...fullEnv, CROO_SDK_KEY: '""' })).toThrow(MissingEnvError);
+  });
 });
 
 describe('llm config', () => {
