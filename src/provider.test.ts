@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { DeliverableType, EventType } from '@croo-network/sdk';
-import { startProvider, type ProviderClient, type ProviderDeps, type StreamLike } from './provider.js';
+import { startProvider, reconcileOrders, type ProviderClient, type ProviderDeps, type StreamLike } from './provider.js';
 import { OrderStore } from './store/orders.js';
 import { validateSchema } from './engine/schema.js';
 
@@ -103,11 +103,27 @@ describe('provider order lifecycle', () => {
     expect(client.acceptNegotiation).not.toHaveBeenCalled();
   });
 
-  it('marks an order settled on completion', async () => {
+  it('marks an order completed on the completion event', async () => {
     const { stream, store, deps } = makeDeps();
     await startProvider(deps);
     await stream.emit(EventType.OrderCompleted, { order_id: 'o1' });
-    expect(store.getOrder('o1')?.status).toBe('settled');
+    expect(store.getOrder('o1')?.status).toBe('completed');
+  });
+
+  it('reconcileOrders syncs stuck in-flight orders from CROO', async () => {
+    const store = new OrderStore(':memory:');
+    store.upsertOrder({ orderId: 'stuck', serviceId: 'svc-schema', status: 'delivering' });
+    store.upsertOrder({ orderId: 'done', serviceId: 'svc-schema', status: 'completed' });
+    const getOrder = vi.fn(async (id: string) => ({
+      orderId: id,
+      serviceId: 'svc-schema',
+      negotiationId: 'n',
+      status: 'completed',
+    }));
+    await reconcileOrders({ client: { getOrder } as any, store });
+    expect(getOrder).toHaveBeenCalledTimes(1); // only the non-final 'stuck' order
+    expect(getOrder).toHaveBeenCalledWith('stuck');
+    expect(store.getOrder('stuck')?.status).toBe('completed');
   });
 
   it('skips re-processing an already-delivered order', async () => {

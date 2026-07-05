@@ -19,6 +19,7 @@ export interface ProviderOrder {
   orderId: string;
   serviceId: string;
   negotiationId: string;
+  status?: string;
   requesterAgentId?: string;
   requesterWalletAddress?: string;
   price?: string;
@@ -165,8 +166,31 @@ async function handleNegotiation(e: Event, deps: ProviderDeps): Promise<void> {
 function handleOrderCompleted(e: Event, deps: ProviderDeps): void {
   if (!e.order_id) return;
   deps.store.upsertOrder({ orderId: e.order_id, status: 'completed' });
-  deps.store.markStatus(e.order_id, 'settled');
-  deps.logger?.info?.(`settled ${e.order_id}`);
+  deps.store.markStatus(e.order_id, 'completed');
+  deps.logger?.info?.(`completed ${e.order_id}`);
+}
+
+const FINAL_STATUSES = new Set(['completed', 'settled', 'rejected', 'expired']);
+
+/**
+ * Reconcile in-flight orders against CROO. The `order_completed` WS event can be
+ * missed (reconnects, timing), leaving orders stuck at 'created'/'paid'/
+ * 'delivering'. This polls CROO for each non-final order and syncs its status,
+ * so the store (and dashboard) become eventually consistent.
+ */
+export async function reconcileOrders(deps: Pick<ProviderDeps, 'client' | 'store' | 'logger'>): Promise<void> {
+  const inflight = deps.store.listOrders(200).filter((o) => !o.status || !FINAL_STATUSES.has(o.status));
+  for (const o of inflight) {
+    try {
+      const order = await deps.client.getOrder(o.orderId);
+      if (order.status && order.status !== o.status) {
+        deps.store.markStatus(o.orderId, order.status);
+        deps.logger?.info?.(`reconciled ${o.orderId}: ${o.status} -> ${order.status}`);
+      }
+    } catch (err) {
+      deps.logger?.warn?.(`reconcile ${o.orderId} failed: ${(err as Error).message}`);
+    }
+  }
 }
 
 /** Wire all event handlers onto a stream. Exposed for tests. */
