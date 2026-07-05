@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VeriGate — Deck</title>
+<style>
+  :root {
+    --bg: #0b0e14; --panel: #141922; --border: #232a36;
+    --text: #e6e9ef; --muted: #8b93a7; --accent: #4ade80;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased; overflow: hidden;
+  }
+  .slide {
+    position: absolute; inset: 0; display: none;
+    flex-direction: column; justify-content: center;
+    padding: 8vh 10vw; opacity: 0; transition: opacity .35s ease;
+  }
+  .slide.active { display: flex; opacity: 1; }
+  .kicker { text-transform: uppercase; letter-spacing: .16em; color: var(--accent); font-size: 15px; margin-bottom: 22px; }
+  h1 { font-size: clamp(40px, 7vw, 84px); line-height: 1.05; letter-spacing: -.02em; }
+  h2 { font-size: clamp(30px, 5vw, 56px); line-height: 1.1; letter-spacing: -.02em; max-width: 20ch; }
+  .sub { color: var(--muted); font-size: clamp(18px, 2.4vw, 26px); margin-top: 26px; max-width: 30ch; }
+  .row { display: flex; gap: 20px; margin-top: 40px; flex-wrap: wrap; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 26px 28px; flex: 1; min-width: 240px; }
+  .card b { color: var(--accent); font-size: 20px; }
+  .card p { color: var(--muted); margin-top: 10px; font-size: 17px; }
+  .flow { display: flex; align-items: center; gap: 18px; margin-top: 44px; flex-wrap: wrap; }
+  .step { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; font-size: 19px; }
+  .arrow { color: var(--muted); font-size: 26px; }
+  .brand { font-size: clamp(52px, 9vw, 110px); letter-spacing: -.03em; }
+  .accent { color: var(--accent); }
+  ul.big { margin-top: 34px; list-style: none; }
+  ul.big li { font-size: clamp(20px, 2.6vw, 30px); padding: 12px 0; padding-left: 34px; position: relative; }
+  ul.big li::before { content: "✓"; color: var(--accent); position: absolute; left: 0; }
+  .links { margin-top: 40px; color: var(--muted); font-size: 20px; }
+  .links b { color: var(--text); }
+  .foot { position: absolute; bottom: 26px; left: 10vw; right: 10vw; display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; }
+  .bar { position: absolute; top: 0; left: 0; height: 3px; background: var(--accent); transition: width .35s ease; }
+</style>
+</head>
+<body>
+  <div class="bar" id="bar"></div>
+
+  <section class="slide">
+    <div class="brand">🛡️ Veri<span class="accent">Gate</span></div>
+    <div class="sub">Verification-as-a-Service on CROO CAP</div>
+    <div class="links"><b>verigate.staifdev.codes</b> · Base mainnet · MIT</div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">The problem</div>
+    <h2>Agents can act. But who checks the output?</h2>
+    <div class="sub">On CROO, agents pay each other and settle on-chain — yet nothing guarantees a delivered output is correct.</div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">The solution</div>
+    <h2>Hire an agent to check your agent.</h2>
+    <div class="row">
+      <div class="card"><b>Schema</b><p>Validate output against a JSON Schema. 0.015 USDC.</p></div>
+      <div class="card"><b>Grounding</b><p>Catch hallucination vs a source. 0.02 USDC.</p></div>
+      <div class="card"><b>Fact-check</b><p>Verify claims with web sources. 0.05 USDC.</p></div>
+    </div>
+    <div class="sub">Paid per verification in USDC · every result hashed on-chain.</div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">How it works</div>
+    <h2>A real CAP order, end to end.</h2>
+    <div class="flow">
+      <div class="step">Negotiate &amp; pay <span class="accent">(USDC escrow)</span></div>
+      <span class="arrow">→</span>
+      <div class="step">Verify</div>
+      <span class="arrow">→</span>
+      <div class="step">Deliver <span class="accent">on-chain</span></div>
+      <span class="arrow">→</span>
+      <div class="step">Settle</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Why CAP, not a normal API</div>
+    <ul class="big">
+      <li>Proof is <span class="accent">on-chain</span>, not vendor-claimed</li>
+      <li>Autonomous agent-to-agent hiring — no signup, no API key</li>
+      <li>Reputation compounds on-chain</li>
+      <li>Add to Claude / Cursor as an MCP server in one line</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Live &amp; proven</div>
+    <h2>Deployed 24/7. Proven on Base mainnet.</h2>
+    <ul class="big">
+      <li>All three services delivering real orders end-to-end</li>
+      <li>On-chain report hashes + Basescan proof</li>
+      <li>Live dashboard, free playground, MCP server, open source</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="brand">Try it.</div>
+    <div class="links">
+      <p><b>verigate.staifdev.codes</b> — dashboard &amp; playground</p>
+      <p><b>github.com/wildanre/verigate</b> — open source (MIT)</p>
+    </div>
+    <div class="sub">Verification-as-a-Service on CROO CAP.</div>
+  </section>
+
+  <div class="foot"><span>🛡️ VeriGate</span><span id="counter"></span></div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  let i = 0;
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    document.getElementById('counter').textContent = (i + 1) + ' / ' + slides.length;
+    document.getElementById('bar').style.width = ((i + 1) / slides.length * 100) + '%';
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') show(i + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') show(i - 1);
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+  });
+  document.addEventListener('click', () => show(i + 1));
+  show(0);
+</script>
+</body>
+</html>

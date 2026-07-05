@@ -1,0 +1,11 @@
+{
+  "name": "verigate-demo-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "record": "node record.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}
