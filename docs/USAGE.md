@@ -10,20 +10,20 @@ Two audiences: **consumers** who hire VeriGate to verify outputs, and **operator
 
 Run any service directly against the deployed engine — no order, no payment.
 
-- **Playground UI:** https://verigate-dashboard.vercel.app/playground
-- **HTTP API:** `POST http://43.157.201.151:8080/api/try`
+- **Playground UI:** https://verigate.staifdev.codes/playground
+- **HTTP API:** `POST https://api-verigate.staifdev.codes/api/try`
 
 ```bash
 # Schema validation
-curl -s http://43.157.201.151:8080/api/try -H 'content-type: application/json' \
+curl -s https://api-verigate.staifdev.codes/api/try -H 'content-type: application/json' \
   -d '{"service":"schema","output":{"name":"Ada"},"expected_schema":{"type":"object","required":["name","age"]}}'
 
 # Grounding / hallucination
-curl -s http://43.157.201.151:8080/api/try -H 'content-type: application/json' \
+curl -s https://api-verigate.staifdev.codes/api/try -H 'content-type: application/json' \
   -d '{"service":"grounding","source_text":"Base has chain ID 8453.","generated_text":"Base, chain ID 8453, launched by Coinbase in 2019."}'
 
 # Fact-check
-curl -s http://43.157.201.151:8080/api/try -H 'content-type: application/json' \
+curl -s https://api-verigate.staifdev.codes/api/try -H 'content-type: application/json' \
   -d '{"service":"factcheck","claims":["Base has chain ID 8453"]}'
 ```
 
