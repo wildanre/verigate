@@ -46,6 +46,11 @@ async function handle(req: IncomingMessage, res: ServerResponse, store: OrderSto
     if (path === '/health') return json(res, 200, { status: 'ok' });
     if (path === '/api/orders') return json(res, 200, { orders: store.listOrders(200) });
     if (path === '/api/metrics') return json(res, 200, store.metrics());
+    if (path.startsWith('/api/orders/')) {
+      const id = decodeURIComponent(path.slice('/api/orders/'.length));
+      const order = store.getOrder(id);
+      return order ? json(res, 200, { order }) : json(res, 404, { error: 'order not found' });
+    }
   }
 
   if (req.method === 'POST' && path === '/api/try') {

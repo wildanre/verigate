@@ -15,7 +15,11 @@ describe('makeFactCheck', () => {
     const r = await makeFactCheck(llm, search)({ claims: ['Base chain ID is 8453'] });
     expect(r.verdict).toBe('pass');
     expect(r.score).toBe(100);
-    expect((r.checks as any[])[0].sources).toEqual(['https://src']);
+    // checks are strings (CROO deliverable rejects arrays of objects); sources are flat URLs
+    expect(Array.isArray(r.checks)).toBe(true);
+    expect((r.checks as string[])[0]).toContain('Base chain ID is 8453');
+    expect((r.checks as string[])[0]).toContain('supported');
+    expect(r.sources).toEqual(['https://src']);
   });
 
   it('fails when any claim is refuted', async () => {
