@@ -1,7 +1,7 @@
 import { loadConfig, redactConfig } from './config.js';
 import { createClient } from './cap/client.js';
 import { OrderStore } from './store/orders.js';
-import { startProvider, type ProviderDeps } from './provider.js';
+import { startProvider, reconcileOrders, type ProviderDeps } from './provider.js';
 import { startHttpApi } from './api.js';
 import { validateSchema } from './engine/schema.js';
 import { makeGroundingCheck } from './engine/grounding.js';
@@ -50,12 +50,21 @@ async function main(): Promise<void> {
 
   const stream = await startProvider(deps);
 
-  // Read-only HTTP API for the dashboard (e.g. hosted on Vercel).
+  // HTTP API for the dashboard + free /api/try verification preview.
   const port = Number(process.env.PORT ?? 8080);
-  const api = startHttpApi(store, port, console);
+  const api = startHttpApi(store, port, { logger: console, verifiers });
+
+  // Reconcile in-flight orders against CROO in case order_completed events are missed.
+  const reconcileTimer = setInterval(() => {
+    reconcileOrders({ client: deps.client, store, logger: console }).catch((e) =>
+      console.warn('reconcile pass failed:', (e as Error).message),
+    );
+  }, 30_000);
+  reconcileTimer.unref?.();
 
   const shutdown = () => {
     console.log('shutting down...');
+    clearInterval(reconcileTimer);
     stream.close?.();
     api.close();
     process.exit(0);

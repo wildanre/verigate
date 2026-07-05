@@ -3,6 +3,7 @@ import { once } from 'node:events';
 import type { Server, AddressInfo } from 'node:net';
 import { startHttpApi } from './api.js';
 import { OrderStore } from './store/orders.js';
+import { validateSchema } from './engine/schema.js';
 
 let server: Server;
 let base: string;
@@ -10,10 +11,18 @@ let base: string;
 beforeAll(async () => {
   const store = new OrderStore(':memory:');
   store.upsertOrder({ orderId: 'o1', serviceId: 'svc', requesterAgentId: 'a1', buyerWalletAddress: 'w1', status: 'settled' });
-  server = startHttpApi(store, 0);
+  server = startHttpApi(store, 0, { verifiers: { schema: validateSchema } });
   await once(server, 'listening');
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 });
+
+async function post(path: string, body: unknown) {
+  return fetch(`${base}${path}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
 
 afterAll(() => {
   server.close();
@@ -40,5 +49,22 @@ describe('read HTTP API', () => {
 
   it('404s an unknown path', async () => {
     expect((await fetch(`${base}/nope`)).status).toBe(404);
+  });
+
+  it('runs a free /api/try schema preview', async () => {
+    const r = await post('/api/try', {
+      service: 'schema',
+      output: { name: 'Ada' },
+      expected_schema: { type: 'object', required: ['name', 'age'] },
+    });
+    expect(r.status).toBe(200);
+    const j = await r.json();
+    expect(j.report.verdict).toBe('fail');
+    expect(j.report.report_hash).toMatch(/^0x[0-9a-f]{64}$/);
+  });
+
+  it('rejects /api/try for an unavailable service', async () => {
+    const r = await post('/api/try', { service: 'grounding', source_text: 'x', generated_text: 'y' });
+    expect(r.status).toBe(400); // grounding verifier not registered in this test
   });
 });
