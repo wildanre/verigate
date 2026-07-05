@@ -1,11 +1,10 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'motion/react';
 import { Reveal } from './Reveal';
 import { CountUp } from './CountUp';
-import { DotGrid } from './DotGrid';
-import { Particles } from './Particles';
+import { HoleBackground } from '@/components/animate-ui/components/backgrounds/hole';
 
 const GH = 'https://github.com/wildanre/verigate';
 const API_BASE = 'https://api-verigate.staifdev.codes';
@@ -68,8 +67,9 @@ export function Landing({ metrics }: { metrics: LandingMetrics }) {
     <div className="landing">
       {/* Hero */}
       <section className="hero">
-        <DotGrid />
-        <Particles />
+        <div className="hero-fx">
+          <HoleBackground strokeColor="#3a4351" className="size-full" />
+        </div>
         <div className="section-inner hero-inner">
           <span className="pill">● Live on Base mainnet · CROO CAP</span>
           <Headline />

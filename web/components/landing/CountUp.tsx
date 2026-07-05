@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useInView, useReducedMotion } from 'framer-motion';
+import { useInView, useReducedMotion } from 'motion/react';
 
 /** Animate a number from 0 to `value` when it scrolls into view. */
 export function CountUp({ value, duration = 1.2 }: { value: number; duration?: number }) {
