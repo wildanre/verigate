@@ -1,21 +1,32 @@
 'use client';
 
-import { motion, useReducedMotion } from 'motion/react';
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
+import { gsap, useGSAP, MOTION_OK } from '../../lib/gsap';
 
-/** Fade + rise a block into view once, respecting reduced-motion. */
+/** Fade + rise a block into view once (GSAP ScrollTrigger), reduced-motion aware. */
 export function Reveal({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
-  const reduced = useReducedMotion();
-  if (reduced) return <div className={className}>{children}</div>;
+  const ref = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add(MOTION_OK, () => {
+        gsap.from(ref.current, {
+          opacity: 0,
+          y: 24,
+          duration: 0.7,
+          delay,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: ref.current, start: 'top 88%', once: true },
+        });
+      });
+    },
+    { scope: ref },
+  );
+
   return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
-    >
+    <div ref={ref} className={className}>
       {children}
-    </motion.div>
+    </div>
   );
 }
