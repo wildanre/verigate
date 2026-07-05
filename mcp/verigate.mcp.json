@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "verigate": {
+      "command": "node",
+      "args": ["/absolute/path/to/verigate/dist/mcp-server.js"],
+      "env": {
+        "CROO_SDK_KEY": "croo_sk_...your-requester-agent...",
+        "CROO_API_URL": "https://api.croo.network",
+        "CROO_WS_URL": "wss://api.croo.network/ws"
+      }
+    }
+  }
+}
