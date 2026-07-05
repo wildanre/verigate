@@ -101,7 +101,7 @@ export class OrderStore {
     return this.db
       .prepare(
         `SELECT
-           (SELECT COUNT(*) FROM orders WHERE status = 'completed') AS completed,
+           (SELECT COUNT(*) FROM orders WHERE delivered = 1 OR status IN ('completed', 'settled')) AS completed,
            (SELECT COUNT(DISTINCT requesterAgentId) FROM orders WHERE requesterAgentId IS NOT NULL) AS uniqueCounterparties,
            (SELECT COUNT(DISTINCT buyerWalletAddress) FROM orders WHERE buyerWalletAddress IS NOT NULL) AS uniqueBuyers,
            (SELECT COUNT(*) FROM orders) AS total`,

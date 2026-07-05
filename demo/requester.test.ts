@@ -73,4 +73,21 @@ describe('attachRequester', () => {
     await stream.emit(EventType.OrderRejected, { order_id: 'o1', reason: 'engine failure' });
     await expect(p).rejects.toThrow(/rejected/);
   });
+
+  it('ignores events for a different negotiation on the same agent WS', async () => {
+    const stream = new FakeStream();
+    const client = makeClient();
+    const p = attachRequester(stream, client, { serviceId: 'svc' }, () => 'mine');
+
+    // Another order (not ours) completing must not pay or resolve us.
+    await stream.emit(EventType.OrderCreated, { order_id: 'other', negotiation_id: 'theirs' });
+    await stream.emit(EventType.OrderCompleted, { order_id: 'other', negotiation_id: 'theirs' });
+    expect(client.payOrder).not.toHaveBeenCalled();
+
+    // Our order proceeds normally.
+    await stream.emit(EventType.OrderCreated, { order_id: 'o1', negotiation_id: 'mine' });
+    await stream.emit(EventType.OrderCompleted, { order_id: 'o1', negotiation_id: 'mine' });
+    await p;
+    expect(client.payOrder).toHaveBeenCalledWith('o1');
+  });
 });
