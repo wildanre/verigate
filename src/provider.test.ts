@@ -113,17 +113,27 @@ describe('provider order lifecycle', () => {
   it('reconcileOrders syncs stuck in-flight orders from CROO', async () => {
     const store = new OrderStore(':memory:');
     store.upsertOrder({ orderId: 'stuck', serviceId: 'svc-schema', status: 'delivering' });
+    store.markDelivered('stuck'); // delivered — reconcile should only sync status
     store.upsertOrder({ orderId: 'done', serviceId: 'svc-schema', status: 'completed' });
-    const getOrder = vi.fn(async (id: string) => ({
-      orderId: id,
-      serviceId: 'svc-schema',
-      negotiationId: 'n',
-      status: 'completed',
-    }));
-    await reconcileOrders({ client: { getOrder } as any, store });
+    const getOrder = vi.fn(async (id: string) => ({ orderId: id, serviceId: 'svc-schema', negotiationId: 'n', status: 'completed' }));
+    const deps = { client: { getOrder } as any, store, engine: { verifiers: {}, serviceIds } };
+    await reconcileOrders(deps as any);
     expect(getOrder).toHaveBeenCalledTimes(1); // only the non-final 'stuck' order
-    expect(getOrder).toHaveBeenCalledWith('stuck');
     expect(store.getOrder('stuck')?.status).toBe('completed');
+  });
+
+  it('reconcileOrders re-delivers a paid-but-undelivered order', async () => {
+    const { store, client, deps } = makeDeps();
+    store.upsertOrder({ orderId: 'o1', serviceId: 'svc-schema', status: 'paid' }); // paid, delivered=0
+    (client.getOrder as any).mockResolvedValue({
+      orderId: 'o1',
+      serviceId: 'svc-schema',
+      negotiationId: 'neg1',
+      status: 'paid',
+    });
+    await reconcileOrders(deps);
+    expect(client.deliverOrder).toHaveBeenCalledOnce(); // re-delivered
+    expect(store.isDelivered('o1')).toBe(true);
   });
 
   it('skips re-processing an already-delivered order', async () => {
