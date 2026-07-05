@@ -8,6 +8,18 @@ export interface CrooConfig {
   rpcURL?: string;
 }
 
+/**
+ * LLM connection. Supports a direct Anthropic key (x-api-key) or an
+ * Anthropic-compatible gateway (e.g. Manifest) via base URL + bearer auth token.
+ */
+export interface LlmConfig {
+  token?: string;
+  /** True when the token is a bearer auth token (gateway); false for an Anthropic x-api-key. */
+  useAuthToken: boolean;
+  baseURL?: string;
+  model?: string;
+}
+
 export interface AppConfig {
   croo: CrooConfig;
   /** CROO service IDs registered in the Dashboard, keyed by verifier kind. */
@@ -17,7 +29,7 @@ export interface AppConfig {
     grounding?: string;
   };
   dbPath: string;
-  anthropicApiKey?: string;
+  llm: LlmConfig;
   tavilyApiKey?: string;
 }
 
@@ -32,6 +44,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const missing = REQUIRED.filter((k) => !env[k] || env[k]!.trim() === '');
   if (missing.length > 0) throw new MissingEnvError(missing);
 
+  const authToken = env.ANTHROPIC_AUTH_TOKEN?.trim();
+  const apiKey = env.ANTHROPIC_API_KEY?.trim();
+
   return {
     croo: {
       apiURL: env.CROO_API_URL!,
@@ -45,7 +60,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       grounding: env.SVC_GROUNDING_ID?.trim() || undefined,
     },
     dbPath: env.DB_PATH?.trim() || './data/verigate.db',
-    anthropicApiKey: env.ANTHROPIC_API_KEY?.trim() || undefined,
+    llm: {
+      token: authToken || apiKey || undefined,
+      useAuthToken: !!authToken,
+      baseURL: env.ANTHROPIC_BASE_URL?.trim() || undefined,
+      model: env.ANTHROPIC_MODEL?.trim() || undefined,
+    },
     tavilyApiKey: env.TAVILY_API_KEY?.trim() || undefined,
   };
 }
@@ -55,7 +75,7 @@ export function redactConfig(cfg: AppConfig): AppConfig {
   return {
     ...cfg,
     croo: { ...cfg.croo, sdkKey: mask(cfg.croo.sdkKey) },
-    anthropicApiKey: cfg.anthropicApiKey ? '***' : undefined,
+    llm: { ...cfg.llm, token: cfg.llm.token ? '***' : undefined },
     tavilyApiKey: cfg.tavilyApiKey ? '***' : undefined,
   };
 }

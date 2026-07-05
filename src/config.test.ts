@@ -43,12 +43,34 @@ describe('loadConfig', () => {
   });
 });
 
+describe('llm config', () => {
+  it('reads a direct Anthropic api key (x-api-key mode)', () => {
+    const cfg = loadConfig({ ...fullEnv, ANTHROPIC_API_KEY: 'sk-ant-123' });
+    expect(cfg.llm.token).toBe('sk-ant-123');
+    expect(cfg.llm.useAuthToken).toBe(false);
+    expect(cfg.llm.baseURL).toBeUndefined();
+  });
+
+  it('reads a gateway auth token with base URL and model', () => {
+    const cfg = loadConfig({
+      ...fullEnv,
+      ANTHROPIC_AUTH_TOKEN: 'mnfst__x',
+      ANTHROPIC_BASE_URL: 'https://app.manifest.build',
+      ANTHROPIC_MODEL: 'auto',
+    });
+    expect(cfg.llm.token).toBe('mnfst__x');
+    expect(cfg.llm.useAuthToken).toBe(true);
+    expect(cfg.llm.baseURL).toBe('https://app.manifest.build');
+    expect(cfg.llm.model).toBe('auto');
+  });
+});
+
 describe('redactConfig', () => {
-  it('masks the SDK key and API keys', () => {
-    const cfg = loadConfig({ ...fullEnv, ANTHROPIC_API_KEY: 'sk-ant-123', TAVILY_API_KEY: 'tvly-1' });
+  it('masks the SDK key and LLM/search secrets', () => {
+    const cfg = loadConfig({ ...fullEnv, ANTHROPIC_AUTH_TOKEN: 'mnfst__x', TAVILY_API_KEY: 'tvly-1' });
     const red = redactConfig(cfg);
     expect(red.croo.sdkKey).toBe('croo_sk…');
-    expect(red.anthropicApiKey).toBe('***');
+    expect(red.llm.token).toBe('***');
     expect(red.tavilyApiKey).toBe('***');
   });
 });

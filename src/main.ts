@@ -22,8 +22,13 @@ async function main(): Promise<void> {
     schema: validateSchema,
   };
 
-  if (cfg.anthropicApiKey) {
-    const llm = createLLM(cfg.anthropicApiKey);
+  if (cfg.llm.token) {
+    const llm = createLLM({
+      token: cfg.llm.token,
+      useAuthToken: cfg.llm.useAuthToken,
+      baseURL: cfg.llm.baseURL,
+      model: cfg.llm.model,
+    });
     verifiers.grounding = makeGroundingCheck(llm);
     if (cfg.tavilyApiKey) {
       verifiers.factcheck = makeFactCheck(llm, new TavilySearch(cfg.tavilyApiKey));
@@ -31,7 +36,7 @@ async function main(): Promise<void> {
       console.warn('TAVILY_API_KEY missing — fact-check verifier disabled');
     }
   } else {
-    console.warn('ANTHROPIC_API_KEY missing — grounding & fact-check verifiers disabled');
+    console.warn('No LLM token (ANTHROPIC_AUTH_TOKEN/ANTHROPIC_API_KEY) — grounding & fact-check disabled');
   }
 
   const deps: ProviderDeps = {

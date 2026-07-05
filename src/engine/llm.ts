@@ -48,6 +48,18 @@ export function parseJSON<T>(text: string): T {
   }
 }
 
-export function createLLM(apiKey: string, model?: string): AnthropicLLM {
-  return new AnthropicLLM(new Anthropic({ apiKey }), model);
+export interface LLMClientOptions {
+  token: string;
+  /** True for a gateway bearer token (Authorization header); false for an Anthropic x-api-key. */
+  useAuthToken?: boolean;
+  baseURL?: string;
+  model?: string;
+}
+
+export function createLLM(opts: LLMClientOptions): AnthropicLLM {
+  const clientOpts: ConstructorParameters<typeof Anthropic>[0] = {};
+  if (opts.baseURL) clientOpts.baseURL = opts.baseURL;
+  if (opts.useAuthToken) clientOpts.authToken = opts.token;
+  else clientOpts.apiKey = opts.token;
+  return new AnthropicLLM(new Anthropic(clientOpts), opts.model ?? DEFAULT_MODEL);
 }
