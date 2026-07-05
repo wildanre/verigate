@@ -27,6 +27,21 @@ export async function getOrders(): Promise<DashOrder[]> {
   return db.getOrders();
 }
 
+export async function getOrder(id: string): Promise<DashOrder | null> {
+  if (API) {
+    try {
+      const r = await fetch(`${API}/api/orders/${encodeURIComponent(id)}`, { cache: 'no-store' });
+      if (!r.ok) return null;
+      const j = (await r.json()) as { order?: DashOrder };
+      return j.order ?? null;
+    } catch {
+      return null;
+    }
+  }
+  const db = await import('./db');
+  return db.getOrders().find((o) => o.orderId === id) ?? null;
+}
+
 export async function getMetrics(): Promise<DashMetrics> {
   if (API) {
     try {

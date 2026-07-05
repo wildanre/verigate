@@ -39,7 +39,16 @@ export function makeFactCheck(llm: LLM, search: SearchClient): Verifier {
     }
 
     const { verdict, score } = aggregate(checks);
-    return { verdict, score, checks };
+    // CROO's deliverable schema rejects arrays of objects (invalid_item_type),
+    // so serialize each check to a readable string and flatten sources.
+    return {
+      verdict,
+      score,
+      checks: checks.map(
+        (c) => `[${c.result}${c.confidence ? ` ${c.confidence}` : ''}] ${c.claim}${c.sources.length ? ` — ${c.sources.join(', ')}` : ''}`,
+      ),
+      sources: [...new Set(checks.flatMap((c) => c.sources))],
+    };
   };
 }
 
