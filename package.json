@@ -1,0 +1,38 @@
+{
+  "name": "verigate",
+  "version": "1.0.0",
+  "description": "VeriGate — Verification-as-a-Service agent on CROO CAP",
+  "main": "dist/provider.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit -p tsconfig.check.json",
+    "start": "node dist/main.js",
+    "provider": "tsx src/main.ts",
+    "requester": "tsx demo/requester.ts"
+  },
+  "keywords": [
+    "croo",
+    "cap",
+    "verification",
+    "agent",
+    "base"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0",
+    "@croo-network/sdk": "^0.2.1",
+    "ajv": "^8.20.0",
+    "better-sqlite3": "^12.11.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^26.1.0",
+    "tsx": "^4.23.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

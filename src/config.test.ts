@@ -1,0 +1,54 @@
+import { describe, it, expect } from 'vitest';
+import { loadConfig, redactConfig } from './config.js';
+import { MissingEnvError } from './errors.js';
+
+const fullEnv = {
+  CROO_API_URL: 'https://api.croo.network',
+  CROO_WS_URL: 'wss://api.croo.network/ws',
+  CROO_SDK_KEY: 'croo_sk_abcdef1234567890',
+  SVC_SCHEMA_ID: 'svc-schema',
+  SVC_GROUNDING_ID: 'svc-grounding',
+  SVC_FACTCHECK_ID: 'svc-factcheck',
+} as NodeJS.ProcessEnv;
+
+describe('loadConfig', () => {
+  it('loads a complete environment and applies defaults for optional values', () => {
+    const cfg = loadConfig(fullEnv);
+    expect(cfg.croo.apiURL).toBe('https://api.croo.network');
+    expect(cfg.croo.sdkKey).toBe('croo_sk_abcdef1234567890');
+    expect(cfg.croo.rpcURL).toBeUndefined();
+    expect(cfg.dbPath).toBe('./data/verigate.db');
+    expect(cfg.serviceIds.schema).toBe('svc-schema');
+  });
+
+  it('honors overrides for optional values', () => {
+    const cfg = loadConfig({ ...fullEnv, BASE_RPC_URL: 'https://rpc.example', DB_PATH: '/tmp/x.db' });
+    expect(cfg.croo.rpcURL).toBe('https://rpc.example');
+    expect(cfg.dbPath).toBe('/tmp/x.db');
+  });
+
+  it('throws MissingEnvError naming every absent required var', () => {
+    const { CROO_SDK_KEY, CROO_WS_URL, ...partial } = fullEnv as Record<string, string>;
+    try {
+      loadConfig(partial as NodeJS.ProcessEnv);
+      expect.unreachable('should have thrown');
+    } catch (err) {
+      expect(err).toBeInstanceOf(MissingEnvError);
+      expect((err as MissingEnvError).missing).toEqual(['CROO_WS_URL', 'CROO_SDK_KEY']);
+    }
+  });
+
+  it('treats blank strings as missing', () => {
+    expect(() => loadConfig({ ...fullEnv, CROO_SDK_KEY: '   ' })).toThrow(MissingEnvError);
+  });
+});
+
+describe('redactConfig', () => {
+  it('masks the SDK key and API keys', () => {
+    const cfg = loadConfig({ ...fullEnv, ANTHROPIC_API_KEY: 'sk-ant-123', TAVILY_API_KEY: 'tvly-1' });
+    const red = redactConfig(cfg);
+    expect(red.croo.sdkKey).toBe('croo_sk…');
+    expect(red.anthropicApiKey).toBe('***');
+    expect(red.tavilyApiKey).toBe('***');
+  });
+});
