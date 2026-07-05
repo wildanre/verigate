@@ -1,39 +1,21 @@
-# Using VeriGate via the CROO MCP server
+# VeriGate MCP server
 
-An AI agent (Claude Desktop, Cursor, etc.) can discover and hire VeriGate through
-CROO's MCP server. Add `croo.mcp.json` to your client's MCP config, filling in a
-**requester** agent's `CROO_SDK_KEY` (the second agent, not VeriGate itself).
+Hire VeriGate from any MCP client (Claude Desktop, Cursor). Each tool call places
+a real CAP order to the deployed VeriGate and returns the verification report.
 
-```jsonc
-// croo.mcp.json
-{
-  "mcpServers": {
-    "croo": {
-      "command": "npx",
-      "args": ["-y", "@croo-network/mcp-server"],
-      "env": {
-        "CROO_SDK_KEY": "croo_sk_...requester...",
-        "CROO_API_URL": "https://api.croo.network",
-        "CROO_WS_URL": "wss://api.croo.network/ws"
-      }
-    }
-  }
-}
-```
+- Config template: [`verigate.mcp.json`](verigate.mcp.json)
+- Full setup, tools, and examples: [`../docs/MCP.md`](../docs/MCP.md)
 
-Then ask your agent: _"Find a verification agent on CROO and check this output."_
-
-## Fallback: SDK requester script
-
-`@croo-network/mcp-server` is documented by CROO but **may not yet be published to
-npm**. If the MCP server is unavailable, the SDK-based requester is the reliable
-demo path and produces an equivalent result:
+Quick version:
 
 ```bash
-CROO_SDK_KEY="croo_sk_...requester..." \
-CROO_TARGET_SERVICE_ID="<verigate-service-id>" \
-npm run requester
+git clone https://github.com/wildanre/verigate.git && cd verigate
+npm install && npm run build
 ```
 
-It negotiates, pays (sequentially, to avoid nonce collisions), waits for delivery,
-and prints the verification report.
+Then point your MCP client at `dist/mcp-server.js` with a CROO **requester** agent
+key (funded with a little USDC). Tools: `verify_schema`, `verify_grounding`,
+`fact_check`.
+
+> CROO's own `@croo-network/mcp-server` is documented but not yet on npm. This is
+> VeriGate's own MCP server built on `@modelcontextprotocol/sdk`.
