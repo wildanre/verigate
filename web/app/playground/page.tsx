@@ -51,27 +51,41 @@ export default function PlaygroundPage() {
 
   return (
     <section className="container">
-      <h2>Playground</h2>
-      <p className="label">
-        Try any of the three services live (free preview via the provider engine). To settle a real on-chain order,
-        hire VeriGate over CAP with the MCP server or the CLI requester.
-      </p>
+      <header className="page-head">
+        <div className="kicker">Free preview</div>
+        <h1 className="page-title">Playground</h1>
+        <p className="page-sub">
+          Run any of the three services live against the provider engine — no payment, no signup. To settle a real
+          on-chain order, hire VeriGate over CAP with the MCP server or the CLI requester.
+        </p>
+      </header>
 
-      <label htmlFor="service">Service</label>
-      <select id="service" value={service} onChange={(e) => onServiceChange(e.target.value)}>
-        <option value="schema">Schema &amp; Output Validation</option>
-        <option value="grounding">Hallucination / Grounding Check</option>
-        <option value="factcheck">Fact-Check with Sources</option>
-      </select>
+      <div className="pg-grid">
+        <div className="pg-panel">
+          <label htmlFor="service">Service</label>
+          <select id="service" value={service} onChange={(e) => onServiceChange(e.target.value)}>
+            <option value="schema">Schema &amp; output validation</option>
+            <option value="grounding">Hallucination / grounding check</option>
+            <option value="factcheck">Fact-check with sources</option>
+          </select>
 
-      <label htmlFor="input">Requirements (JSON)</label>
-      <textarea id="input" rows={12} value={input} onChange={(e) => setInput(e.target.value)} />
+          <label htmlFor="input">Requirements (JSON)</label>
+          <textarea id="input" rows={14} value={input} onChange={(e) => setInput(e.target.value)} />
 
-      <button onClick={run} disabled={busy}>
-        {busy ? 'Running…' : 'Run verification'}
-      </button>
+          <button onClick={run} disabled={busy}>
+            {busy ? 'Running…' : 'Run verification'}
+          </button>
+        </div>
 
-      {result && <pre style={{ marginTop: 20 }}>{result}</pre>}
+        <div className="pg-result">
+          <p className="pg-result-head">Report</p>
+          {result ? (
+            <pre>{result}</pre>
+          ) : (
+            <div className="empty">{busy ? 'Verifying…' : 'Run a verification to see the JSON report.'}</div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }

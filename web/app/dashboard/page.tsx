@@ -8,7 +8,11 @@ export default async function DashboardPage() {
 
   return (
     <section className="container">
-      <h2 style={{ marginTop: 0 }}>Dashboard</h2>
+      <header className="page-head">
+        <div className="kicker">Live · Base mainnet</div>
+        <h1 className="page-title">Dashboard</h1>
+        <p className="page-sub">Every order VeriGate has settled, each report hashed and delivered on-chain.</p>
+      </header>
 
       <div className="metrics">
         <Metric value={metrics.total} label="Total orders" />

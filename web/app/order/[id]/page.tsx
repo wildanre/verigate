@@ -17,8 +17,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   if (!order) {
     return (
       <section className="container">
-        <p className="empty">Order not found.</p>
-        <p><a href="/dashboard">← Back to dashboard</a></p>
+        <a className="back-link" href="/dashboard">← Back to dashboard</a>
+        <div className="empty">Order not found.</div>
       </section>
     );
   }
@@ -30,8 +30,13 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
   return (
     <section className="container">
-      <p><a href="/dashboard">← All orders</a></p>
-      <h2>Verification {verdict !== '—' && <span className={`badge ${verdict}`}>{verdict}</span>}</h2>
+      <a className="back-link" href="/dashboard">← All orders</a>
+      <header className="page-head">
+        <div className="kicker">On-chain proof</div>
+        <h1 className="page-title">
+          Verification {verdict !== '—' && <span className={`badge ${verdict}`}>{verdict}</span>}
+        </h1>
+      </header>
 
       <table style={{ marginBottom: 24 }}>
         <tbody>

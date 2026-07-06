@@ -10,3 +10,8 @@ web/.next/
 web/out/
 coverage/
 *.tsbuildinfo
+
+# Installed agent skills (taste-skill bundle) — local tooling, not project code
+.agents/
+.claude/skills
+skills-lock.json

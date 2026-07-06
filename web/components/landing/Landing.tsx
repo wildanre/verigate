@@ -3,22 +3,17 @@
 import { useRef, type ReactNode } from 'react';
 import { gsap, useGSAP, MOTION_OK } from '../../lib/gsap';
 import { Reveal } from './Reveal';
-import { CountUp } from './CountUp';
+import { ThreadNode } from './ThreadNode';
+import { SplitText } from '../../lib/gsap';
 import { HoleBackground } from '@/components/animate-ui/components/backgrounds/hole';
 
 const GH = 'https://github.com/wildanre/verigate';
 const API_BASE = 'https://api-verigate.staifdev.codes';
 
-export interface LandingMetrics {
-  total: number;
-  completed: number;
-  uniqueCounterparties: number;
-}
-
 const SERVICES = [
-  { name: 'Schema & Output Validation', price: '0.015', desc: 'Deterministic JSON Schema validation of any AI output.' },
-  { name: 'Hallucination / Grounding', price: '0.02', desc: 'Scores how well generated text is supported by its source.' },
-  { name: 'Fact-Check with Sources', price: '0.05', desc: 'Checks claims against the live web and returns source URLs.' },
+  { key: 'schema', name: 'Schema & output validation', price: '0.015', desc: 'Deterministic JSON Schema validation of any AI output.' },
+  { key: 'grounding', name: 'Hallucination / grounding', price: '0.02', desc: 'Scores how well generated text is supported by its source.' },
+  { key: 'fact-check', name: 'Fact-check with sources', price: '0.05', desc: 'Checks claims against the live web and returns source URLs.' },
 ];
 
 const STEPS = [
@@ -62,7 +57,7 @@ const CLI_SNIPPET = `CROO_SDK_KEY=croo_sk_...requester... \\
 CROO_TARGET_SERVICE_ID=<service-id> \\
 npm run requester`;
 
-export function Landing({ metrics }: { metrics: LandingMetrics }) {
+export function Landing() {
   const heroRef = useRef<HTMLElement>(null);
 
   // Scrub: hero content gently rises and fades as you scroll past it.
@@ -94,7 +89,7 @@ export function Landing({ metrics }: { metrics: LandingMetrics }) {
           <HoleBackground strokeColor="#3a4351" className="size-full" />
         </div>
         <div className="section-inner hero-inner">
-          <span className="pill">● Live on Base mainnet · CROO CAP</span>
+          <span className="pill"><span className="pill-dot" aria-hidden /> Live on Base mainnet · CROO CAP</span>
           <Headline />
           <p className="hero-sub">
             Verification-as-a-Service for AI outputs — fact-checking, schema validation, and hallucination detection.
@@ -107,35 +102,34 @@ export function Landing({ metrics }: { metrics: LandingMetrics }) {
         </div>
       </section>
 
-      {/* Live stats */}
-      <section className="band">
-        <div className="section-inner stat-row">
-          <Stat value={metrics.total} label="Orders" />
-          <Stat value={metrics.completed} label="Completed" />
-          <Stat value={metrics.uniqueCounterparties} label="Counterparties" />
-          <Stat value={metrics.completed} label="On-chain proofs" />
-        </div>
-      </section>
+      <ThreadNode />
 
       {/* Services */}
       <Section id="services" title="Three verification services" kicker="What it does">
-        <div className="grid-3">
+        <div className="svc-list">
           {SERVICES.map((s, i) => (
-            <Reveal key={s.name} delay={i * 0.08} className="card">
-              <div className="price">{s.price} USDC</div>
-              <h3>{s.name}</h3>
-              <p>{s.desc}</p>
+            <Reveal key={s.key} delay={i * 0.06} className="svc-row">
+              <div className="svc-key">{s.key}</div>
+              <div className="svc-main">
+                <h3 className="svc-name">{s.name}</h3>
+                <p className="svc-desc">{s.desc}</p>
+              </div>
+              <div className="svc-price">
+                {s.price} <span className="svc-unit">USDC</span>
+              </div>
             </Reveal>
           ))}
         </div>
       </Section>
+
+      <ThreadNode />
 
       {/* How it works */}
       <Section id="how" title="How it works" kicker="CAP flow">
         <div className="flow">
           {STEPS.map((s, i) => (
             <Reveal key={s.t} delay={i * 0.1} className="flow-step">
-              <div className="flow-num">{i + 1}</div>
+              <div className="flow-num">{String(i + 1).padStart(2, '0')}</div>
               <h4>{s.t}</h4>
               <p>{s.d}</p>
               {i < STEPS.length - 1 && <span className="flow-arrow" aria-hidden>→</span>}
@@ -143,6 +137,8 @@ export function Landing({ metrics }: { metrics: LandingMetrics }) {
           ))}
         </div>
       </Section>
+
+      <ThreadNode />
 
       {/* Get started */}
       <Section id="get-started" title="Get started" kicker="Use it three ways">
@@ -168,6 +164,8 @@ export function Landing({ metrics }: { metrics: LandingMetrics }) {
         </div>
       </Section>
 
+      <ThreadNode />
+
       {/* Why CAP + comparison */}
       <Section id="why" title="Why CAP, not a normal API" kicker="The difference">
         <Reveal className="table-wrap">
@@ -188,6 +186,8 @@ export function Landing({ metrics }: { metrics: LandingMetrics }) {
         </Reveal>
       </Section>
 
+      <ThreadNode />
+
       {/* FAQ */}
       <Section id="faq" title="FAQ" kicker="Good to know">
         <div className="faq">
@@ -199,6 +199,8 @@ export function Landing({ metrics }: { metrics: LandingMetrics }) {
           ))}
         </div>
       </Section>
+
+      <ThreadNode variant="last" />
 
       {/* Proof */}
       <Section id="proof" title="Proven on Base mainnet" kicker="Real orders">
@@ -243,19 +245,23 @@ export function Landing({ metrics }: { metrics: LandingMetrics }) {
 
 function Headline() {
   const ref = useRef<HTMLHeadingElement>(null);
-  const words = 'Hire an agent to check your agent'.split(' ');
 
   useGSAP(
     () => {
+      const el = ref.current;
+      if (!el) return;
       const mm = gsap.matchMedia();
       mm.add(MOTION_OK, () => {
-        gsap.from('.hw', {
+        // SplitText per-character rise; revert on cleanup so the DOM stays intact.
+        const split = SplitText.create(el, { type: 'chars,words', charsClass: 'hw' });
+        gsap.from(split.chars, {
+          yPercent: 120,
           opacity: 0,
-          y: 22,
           duration: 0.7,
-          stagger: 0.07,
+          stagger: 0.025,
           ease: 'power3.out',
         });
+        return () => split.revert();
       });
     },
     { scope: ref },
@@ -263,23 +269,8 @@ function Headline() {
 
   return (
     <h1 className="hero-title" ref={ref}>
-      {words.map((w, i) => (
-        <span key={`${w}-${i}`} className="hw" style={{ display: 'inline-block', marginRight: '0.28em' }}>
-          {w}
-        </span>
-      ))}
+      Hire an agent to check your agent
     </h1>
-  );
-}
-
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="stat">
-      <div className="stat-value">
-        <CountUp value={value} />
-      </div>
-      <div className="stat-label">{label}</div>
-    </div>
   );
 }
 
