@@ -170,7 +170,7 @@ src/            Provider agent (CAP client, engine, order store, HTTP API)
 mcp/            MCP server config + reference (verify_schema / verify_grounding / fact_check)
 demo/           CAP SDK requester example (how to hire VeriGate over CAP)
 web/            Next.js dashboard + playground (deployed to Vercel)
-docs/           MCP.md, USAGE.md, SUBMISSION.md, and plans
+docs/           MCP.md (MCP setup), USAGE.md (consumer + operator walkthrough)
 Dockerfile      Provider container (deployed on Tencent Cloud behind Caddy)
 ```
 
@@ -195,7 +195,7 @@ Live totals (from `/api/metrics`): **56** orders delivered across **8** counterp
 
 ## Demo
 
-A ~3-minute motion-graphics walkthrough — architecture flow plus a live agent-consumption demo (real `/api/try`, MCP, and CAP SDK calls with real responses) — accompanies the **DoraHacks BUIDL** submission. See **[docs/SUBMISSION.md](docs/SUBMISSION.md)** for the hackathon submission checklist and live metrics.
+A ~3-minute motion-graphics walkthrough — architecture flow plus a live agent-consumption demo (real `/api/try`, MCP, and CAP SDK calls with real responses) — accompanies the **DoraHacks BUIDL** submission.
 
 ## License
 

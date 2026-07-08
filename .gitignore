@@ -18,3 +18,10 @@ skills-lock.json
 
 # Demo video (Remotion) — rendered separately, uploaded to DoraHacks, not part of the product repo
 demo-video/
+
+# Internal / process docs — kept local, not published to the public repo
+docs/hackathon-guide/
+docs/verigate-project/
+docs/plans/
+docs/DEMO-SCRIPT.md
+docs/SUBMISSION.md
