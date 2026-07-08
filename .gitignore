@@ -15,3 +15,6 @@ coverage/
 .agents/
 .claude/skills
 skills-lock.json
+
+# Demo video (Remotion) — rendered separately, uploaded to DoraHacks, not part of the product repo
+demo-video/
